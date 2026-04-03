@@ -156,9 +156,14 @@ export default async function handler(req, res) {
       return res.status(200).send(reply);
     }
 
+    // 检测是否是新闻/实时信息查询，自动启用联网搜索
+    const newsSearchKeywords = ['新闻', '最新', '今天', '最近', '刚刚', '实时', '热点', '热搜', '发生了什么'];
+    const isNewsQuery = newsSearchKeywords.some(keyword => userContent.includes(keyword));
+    const shouldEnableWebSearch = enableWebSearch || isNewsQuery;
+
     let replyContent;
     try {
-      replyContent = await callSparkX2(apiPassword, userContent, openid, enableWebSearch);
+      replyContent = await callSparkX2(apiPassword, userContent, openid, shouldEnableWebSearch);
     } catch (err) {
       console.error('[Spark Error]', err.message);
 
