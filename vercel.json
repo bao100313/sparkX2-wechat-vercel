@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "spark-wechat",
+  "functions": {
+    "api/wechat.js": {
+      "maxDuration": 10,
+      "memory": 256
+    }
+  },
+  "routes": [
+    {
+      "src": "/wechat",
+      "dest": "/api/wechat.js"
+    }
+  ]
+}

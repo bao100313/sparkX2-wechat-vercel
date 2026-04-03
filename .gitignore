@@ -1,0 +1,13 @@
+# 依赖目录
+node_modules/
+
+# Vercel 构建缓存
+.vercel/
+
+# 本地环境变量（不要提交真实密钥！）
+.env.local
+.env
+
+# 系统文件
+.DS_Store
+Thumbs.db

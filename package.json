@@ -1,0 +1,17 @@
+{
+  "name": "spark-wechat-vercel",
+  "version": "1.0.0",
+  "description": "基于 Vercel Serverless 将讯飞星火 X2 接入微信公众号",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "xml2js": "^0.6.2"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "license": "MIT"
+}
