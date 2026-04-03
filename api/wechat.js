@@ -13,6 +13,7 @@
 import { verifySignature, parseXML, buildTextReply, buildImageReply, readBody } from '../lib/wechat.js';
 import { callSparkX2 } from '../lib/spark.js';
 import { generateImage } from '../lib/image.js';
+import { getWeather, detectWeatherQuery } from '../lib/weather.js';
 
 export default async function handler(req, res) {
   const { signature, timestamp, nonce, echostr } = req.query;
@@ -82,7 +83,22 @@ export default async function handler(req, res) {
     const userContent = msgObj.Content?.trim() || '';
     const openid = msgObj.FromUserName || '';
 
-    // 2. 检测是否是图片生成请求
+    // 2. 检测是否是天气查询
+    const weatherCity = detectWeatherQuery(userContent);
+    if (weatherCity) {
+      try {
+        const weatherInfo = await getWeather(weatherCity);
+        if (weatherInfo) {
+          const reply = buildTextReply(toUser, fromUser, weatherInfo);
+          res.setHeader('Content-Type', 'application/xml');
+          return res.status(200).send(reply);
+        }
+      } catch (err) {
+        console.error('[Weather Error]', err.message);
+      }
+    }
+
+    // 4. 检测是否是图片生成请求
     const imageKeywords = ['生成图片', '画一张', '画一幅', '生成图像', '画个', '画一'];
     const isImageRequest = imageKeywords.some(keyword => userContent.includes(keyword));
 
@@ -114,7 +130,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. 调用星火 X2 进行文字回复
+    // 5. 调用星火 X2 进行文字回复
     const apiPassword = process.env.SPARK_API_PASSWORD || '';
     const enableWebSearch = process.env.ENABLE_WEB_SEARCH === 'true';
 
