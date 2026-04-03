@@ -14,6 +14,7 @@ import { verifySignature, parseXML, buildTextReply, buildImageReply, readBody } 
 import { callSparkX2 } from '../lib/spark.js';
 import { generateImage } from '../lib/image.js';
 import { getWeather, detectWeatherQuery } from '../lib/weather.js';
+import { getHotNews, detectNewsQuery } from '../lib/news.js';
 
 export default async function handler(req, res) {
   const { signature, timestamp, nonce, echostr } = req.query;
@@ -95,6 +96,21 @@ export default async function handler(req, res) {
         }
       } catch (err) {
         console.error('[Weather Error]', err.message);
+      }
+    }
+
+    // 3. 检测是否是新闻查询
+    const newsPlatform = detectNewsQuery(userContent);
+    if (newsPlatform) {
+      try {
+        const newsInfo = await getHotNews(newsPlatform);
+        if (newsInfo) {
+          const reply = buildTextReply(toUser, fromUser, newsInfo);
+          res.setHeader('Content-Type', 'application/xml');
+          return res.status(200).send(reply);
+        }
+      } catch (err) {
+        console.error('[News Error]', err.message);
       }
     }
 
