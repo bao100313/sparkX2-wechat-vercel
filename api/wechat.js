@@ -10,8 +10,9 @@
  *   ENABLE_WEB_SEARCH    是否开启联网搜索，填 "true" 开启（可选，默认 false）
  */
 
-import { verifySignature, parseXML, buildTextReply, readBody } from '../lib/wechat.js';
+import { verifySignature, parseXML, buildTextReply, buildImageReply, readBody } from '../lib/wechat.js';
 import { callSparkX2 } from '../lib/spark.js';
+import { generateImage } from '../lib/image.js';
 
 export default async function handler(req, res) {
   const { signature, timestamp, nonce, echostr } = req.query;
@@ -65,7 +66,39 @@ export default async function handler(req, res) {
     const userContent = msgObj.Content?.trim() || '';
     const openid = msgObj.FromUserName || '';
 
-    // 2. 调用星火 X2
+    // 2. 检测是否是图片生成请求
+    const imageKeywords = ['生成图片', '画一张', '画一幅', '生成图像', '画个', '画一'];
+    const isImageRequest = imageKeywords.some(keyword => userContent.includes(keyword));
+
+    if (isImageRequest) {
+      // 提取图片描述（去掉关键词）
+      let imagePrompt = userContent;
+      imageKeywords.forEach(keyword => {
+        imagePrompt = imagePrompt.replace(keyword, '');
+      });
+      imagePrompt = imagePrompt.trim();
+
+      if (!imagePrompt) {
+        const reply = buildTextReply(toUser, fromUser, '请描述您想生成的图片内容，例如：\n生成图片 一片向日葵花田');
+        res.setHeader('Content-Type', 'application/xml');
+        return res.status(200).send(reply);
+      }
+
+      try {
+        const imageUrl = await generateImage(imagePrompt);
+        // 由于微信图片消息需要 media_id，这里先返回图片链接
+        const reply = buildTextReply(toUser, fromUser, `图片已生成！\n\n${imageUrl}\n\n点击图片查看，长按可保存。`);
+        res.setHeader('Content-Type', 'application/xml');
+        return res.status(200).send(reply);
+      } catch (err) {
+        console.error('[Image Error]', err.message);
+        const reply = buildTextReply(toUser, fromUser, `图片生成失败：${err.message}`);
+        res.setHeader('Content-Type', 'application/xml');
+        return res.status(200).send(reply);
+      }
+    }
+
+    // 3. 调用星火 X2 进行文字回复
     const apiPassword = process.env.SPARK_API_PASSWORD || '';
     const enableWebSearch = process.env.ENABLE_WEB_SEARCH === 'true';
 
