@@ -148,7 +148,6 @@ export default async function handler(req, res) {
 
     // 5. 调用星火 X2 进行文字回复
     const apiPassword = process.env.SPARK_API_PASSWORD || '';
-    const enableWebSearch = process.env.ENABLE_WEB_SEARCH === 'true';
 
     if (!apiPassword) {
       const reply = buildTextReply(toUser, fromUser, '服务配置错误：SPARK_API_PASSWORD 未设置，请联系管理员。');
@@ -156,22 +155,11 @@ export default async function handler(req, res) {
       return res.status(200).send(reply);
     }
 
-    // 检测是否是新闻/实时信息查询，自动启用联网搜索
-    const newsSearchKeywords = ['新闻', '最新', '今天', '最近', '刚刚', '实时', '热点', '热搜', '发生了什么'];
-    const isNewsQuery = newsSearchKeywords.some(keyword => userContent.includes(keyword));
-    const shouldEnableWebSearch = enableWebSearch || isNewsQuery;
-    
-    console.log('[Debug] 用户消息:', userContent);
-    console.log('[Debug] 是否新闻查询:', isNewsQuery);
-    console.log('[Debug] 是否启用联网搜索:', shouldEnableWebSearch);
-
     let replyContent;
     try {
-      replyContent = await callSparkX2(apiPassword, userContent, openid, shouldEnableWebSearch);
-      console.log('[Debug] AI回复:', replyContent.substring(0, 100) + '...');
+      replyContent = await callSparkX2(apiPassword, userContent, openid);
     } catch (err) {
       console.error('[Spark Error]', err.message);
-      console.error('[Spark Error] 错误详情:', err);
 
       // 微信服务器要求 5s 内响应，超时需回复空串让微信重试或给友好提示
       if (err.name === 'TimeoutError' || err.message?.includes('timeout')) {
