@@ -56,6 +56,22 @@ export default async function handler(req, res) {
     const toUser = msgObj.FromUserName;   // 发给谁（用户 OpenID）
     const fromUser = msgObj.ToUserName;   // 来自谁（公众号原始 ID）
 
+    // 处理事件消息（关注/取消关注等）
+    if (msgType === 'event') {
+      const eventType = msgObj.Event;
+      
+      // 用户关注公众号
+      if (eventType === 'subscribe') {
+        const welcomeMsg = '🎉 欢迎关注本公众号！\n\n本公众号已接入讯飞星火大模型，可以：\n\n💬 智能对话 - 直接发送问题\n🎨 生成图片 - 发送"生成图片"+描述\n\n快来发条信息试试看吧~';
+        const reply = buildTextReply(toUser, fromUser, welcomeMsg);
+        res.setHeader('Content-Type', 'application/xml');
+        return res.status(200).send(reply);
+      }
+      
+      // 其他事件暂不处理
+      return res.status(200).send('success');
+    }
+
     // 只处理文本消息，其余消息类型直接回复"暂不支持"
     if (msgType !== 'text') {
       const reply = buildTextReply(toUser, fromUser, '暂时只支持文字消息，请发送文字提问 😊');
