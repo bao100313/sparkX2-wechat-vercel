@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       
       // 用户关注公众号
       if (eventType === 'subscribe') {
-        const welcomeMsg = '🎉 欢迎光临！\n\n我是你的AI小助手，已接入讯飞星火大模型+联网搜索✨\n\n我可以帮你：\n🔍 解答问题 — 知识问答、学习辅导\n🎨 生成图片 — 发送"画一张"即可创作\n📰 实时资讯 — 联网获取最新信息\n\n直接发送消息开始体验吧~';
+        const welcomeMsg = '🎉 欢迎关注！\n\n我是你的AI智能助手，已接入讯飞星火大模型 ✨\n\n📋 我可以帮你：\n\n💬 AI对话 — 百科问答、学习辅导、创意写作\n🎨 生成图片 — 发送"画一张"即可创作\n🌤️ 天气查询 — 发送"北京天气"获取详细信息\n📰 热点新闻 — 发送"今天新闻"查看实时热搜\n\n💡 直接发送消息开始体验吧~';
         const reply = buildTextReply(toUser, fromUser, welcomeMsg);
         res.setHeader('Content-Type', 'application/xml');
         return res.status(200).send(reply);
