@@ -11,6 +11,25 @@
     {
       "src": "/wechat",
       "dest": "/api/wechat.js"
+    },
+    {
+      "src": "/api/wechat",
+      "dest": "/api/wechat.js"
+    },
+    {
+      "src": "/",
+      "dest": "/api/wechat.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
     }
   ]
 }
